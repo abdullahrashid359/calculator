@@ -21,15 +21,30 @@ let secondNum = null;
 let operator = null;
 let resultDisplayed = false;
 
+function clearState() {
+    firstNum = null;
+    secondNum = null;
+    operator = null;
+    resultDisplayed = false;
+}
+
 function operate(first, second, opr) {
+    if(first === null || second === null) 
+        return undefined;
+
     first = Number(first);
     second = Number(second);
+    if(second === 0 && opr === '/') {
+        display.textContent = "ERROR! You can't divide by 0";
+        clearState();
+        return;
+    }
 
     if(opr === '+')
         return add(first, second);
     else if (opr === '-')
         return subtract(first, second);
-    else if(opr === 'X')
+    else if(opr === 'x')
         return multiply(first, second);
     else if(opr === '/')
         return divide(first, second);
@@ -37,25 +52,25 @@ function operate(first, second, opr) {
 
 function getNumber(event) {
     if(resultDisplayed) {
-        firstNum = null;
-        secondNum = null;
-        operator = null;
-        resultDisplayed = false;
+        clearState();
     }
 
     if(!operator) {
-        if(!firstNum) 
+        if(!firstNum) {
+            if(event.target.textContent === "0")
+                return;
             firstNum = event.target.textContent;
+        }       
         else {
             firstNum += event.target.textContent;
         }
 
-        resultDisplayed = false;
         display.textContent = firstNum;
     }
     else {
-        if(!secondNum) 
+        if(!secondNum) {
             secondNum = event.target.textContent;
+        }
         else {
             secondNum += event.target.textContent;
         }
@@ -64,6 +79,22 @@ function getNumber(event) {
 }
 
 function getOperator(event) {
+    if(resultDisplayed) {
+        firstNum = display.textContent;
+        secondNum = null;
+        operator = event.target.textContent
+        resultDisplayed = false;
+        return;
+    }
+    
+    if(operator && secondNum) {
+        firstNum = operate(firstNum, secondNum, operator);
+        secondNum = null;
+        if(Number.isInteger(Number(firstNum)))
+            display.textContent = firstNum;
+        else
+            display.textContent = Number(firstNum).toFixed(2);
+    }
     operator = event.target.textContent;
 }
 
@@ -76,6 +107,19 @@ operators.forEach((operator) => operator.addEventListener("click", getOperator))
 const equals = document.querySelector(".equals");
 equals.addEventListener("click", () =>  {
     const result = operate(firstNum, secondNum, operator);
-    display.textContent = result;
-    resultDisplayed = true;
+
+    if(result !== undefined) {
+        if(Number.isInteger(result))
+            display.textContent = result;
+        else
+            display.textContent = Number(result).toFixed(2);
+
+        resultDisplayed = true;
+    }
 });
+
+const clear = document.querySelector(".clear");
+clear.addEventListener("click", () => {
+    clearState();
+    display.textContent = 0;
+})
