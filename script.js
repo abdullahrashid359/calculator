@@ -154,7 +154,7 @@ clear.addEventListener("click", () => {
     display.textContent = 0;
 })
 
-// Del button/Backspace key handler 
+// Delete button/Backspace key handler 
 
 function eraseCharacter() {
     if(resultDisplayed) {
