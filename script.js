@@ -1,5 +1,8 @@
 const display = document.querySelector(".display");
 
+
+// Basic math operations
+
 function add(a, b) {
     return a + b;
 }
@@ -19,6 +22,10 @@ function divide(a, b) {
 let firstNum = null;
 let secondNum = null; 
 let operator = null;
+
+// Tracks whether the display currently shows a calculated result
+// Used to determine if the next digit press should start a fresh number
+
 let resultDisplayed = false;
 
 function clearState() {
@@ -28,17 +35,20 @@ function clearState() {
     resultDisplayed = false;
 }
 
+// Pure function which only computes and returns the result or "ERROR". 
+// It doesn't handle DOM manipulation
+
 function operate(first, second, opr) {
     if(first === null || second === null) 
         return undefined;
 
     first = Number(first);
     second = Number(second);
-    if(second === 0 && opr === '/') {
-        display.textContent = "ERROR! You can't divide by 0";
-        clearState();
-        return;
-    }
+
+    // Returns "ERROR" instead of crashing, caller handles display and reset
+
+    if(second === 0 && opr === '/') 
+        return "ERROR";
 
     if(opr === '+')
         return add(first, second);
@@ -51,6 +61,8 @@ function operate(first, second, opr) {
 }
 
 function getNumber(event) {
+    // If a result was just shown, pressing a digit should start a new calculation
+
     if(resultDisplayed) {
         clearState();
     }
@@ -91,6 +103,9 @@ function getNumber(event) {
 }
 
 function getOperator(event) {
+    // If an operator is pressed right after a result, treat the result
+    // as the new firstNum and prepare for the next operation
+
     if(resultDisplayed) {
         firstNum = display.textContent;
         secondNum = null;
@@ -102,10 +117,7 @@ function getOperator(event) {
     if(operator && secondNum) {
         firstNum = operate(firstNum, secondNum, operator);
         secondNum = null;
-        if(Number.isInteger(Number(firstNum)))
-            display.textContent = firstNum;
-        else
-            display.textContent = parseFloat(Number(firstNum).toFixed(2));
+        display.textContent = parseFloat(Number(firstNum).toFixed(2));
     }
     operator = event.target.textContent;
 }
@@ -114,21 +126,27 @@ const digits = document.querySelectorAll(".digit");
 digits.forEach((digit) => digit.addEventListener("click", getNumber));
 
 const operators = document.querySelectorAll(".operator");
-operators.forEach((operator) => operator.addEventListener("click", getOperator));
+operators.forEach((op) => op.addEventListener("click", getOperator));
+
+// Calculate the result by calling operate and updates display accordingly
 
 const equals = document.querySelector(".equals");
 equals.addEventListener("click", () =>  {
     const result = operate(firstNum, secondNum, operator);
 
+    if(result === "ERROR") {
+        display.textContent = "ERROR! You can't divide by 0";
+        clearState();
+        return;
+    }
+    
     if(result !== undefined) {
-        if(Number.isInteger(result))
-            display.textContent = result;
-        else
-            display.textContent = parseFloat(Number(result).toFixed(2));
-
+        display.textContent = parseFloat(Number(result).toFixed(2));
         resultDisplayed = true;
     }
 });
+
+// AC button/Delete key handler
 
 const clear = document.querySelector(".clear");
 clear.addEventListener("click", () => {
@@ -136,10 +154,13 @@ clear.addEventListener("click", () => {
     display.textContent = 0;
 })
 
+// Del button/Backspace key handler 
+
 function eraseCharacter() {
     if(resultDisplayed) {
         clearState();
         display.textContent = "0";
+        return;
     }
 
     if(!operator && firstNum) {
@@ -169,6 +190,9 @@ erase.addEventListener("click", () => {
     eraseCharacter();
 } )
 
+
+// Maps keyboard keys to existing buttons and triggers their click handlers
+// This avoids duplicating logic between mouse and keyboard input
 
 document.addEventListener("keydown", (event) => {
     let targetElement = null;
