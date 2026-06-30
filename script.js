@@ -55,24 +55,36 @@ function getNumber(event) {
         clearState();
     }
 
+    const target = event.target.textContent;
+
     if(!operator) {
-        if(!firstNum) {
-            if(event.target.textContent === "0")
-                return;
-            firstNum = event.target.textContent;
+        if(firstNum && target === "." && firstNum.includes("."))
+            return;
+
+        if((!firstNum || firstNum === "0") && target === ".") {
+            firstNum = "0.";
+        }
+        else if(!firstNum || firstNum === "0") {
+            firstNum = target;
         }       
         else {
-            firstNum += event.target.textContent;
+            firstNum += target;
         }
 
         display.textContent = firstNum;
     }
     else {
-        if(!secondNum) {
-            secondNum = event.target.textContent;
+        if(secondNum && target === "." && secondNum.includes("."))
+            return;
+
+        if((!secondNum || secondNum === "0") && target === ".") {
+            secondNum = "0.";
+        }
+        else if(!secondNum || secondNum === "0") {
+            secondNum = target;
         }
         else {
-            secondNum += event.target.textContent;
+            secondNum += target;
         }
         display.textContent = secondNum;
     }
@@ -93,7 +105,7 @@ function getOperator(event) {
         if(Number.isInteger(Number(firstNum)))
             display.textContent = firstNum;
         else
-            display.textContent = Number(firstNum).toFixed(2);
+            display.textContent = parseFloat(Number(firstNum).toFixed(2));
     }
     operator = event.target.textContent;
 }
@@ -112,7 +124,7 @@ equals.addEventListener("click", () =>  {
         if(Number.isInteger(result))
             display.textContent = result;
         else
-            display.textContent = Number(result).toFixed(2);
+            display.textContent = parseFloat(Number(result).toFixed(2));
 
         resultDisplayed = true;
     }
@@ -122,4 +134,70 @@ const clear = document.querySelector(".clear");
 clear.addEventListener("click", () => {
     clearState();
     display.textContent = 0;
+})
+
+function eraseCharacter() {
+    if(resultDisplayed) {
+        clearState();
+        display.textContent = "0";
+    }
+
+    if(!operator && firstNum) {
+        if(firstNum.length === 1) {
+            firstNum = null;
+            display.textContent = "0";
+        } 
+        else {
+            firstNum = firstNum.slice(0, firstNum.length-1);
+            display.textContent = firstNum;
+        }
+    }
+    else if(secondNum) {
+        if(secondNum.length === 1) {
+            secondNum = null;
+            display.textContent = "0";
+        } 
+        else {
+            secondNum = secondNum.slice(0, secondNum.length-1);
+            display.textContent = secondNum;
+        }
+    }
+}
+
+const erase = document.querySelector(".erase");
+erase.addEventListener("click", () => {
+    eraseCharacter();
+} )
+
+
+document.addEventListener("keydown", (event) => {
+    let targetElement = null;
+    
+    if(event.key === "*") {
+        operators.forEach((op) => {
+            if(op.textContent === "x")
+                targetElement = op;
+        })
+    }
+    else if(event.key === "Delete") 
+        targetElement = clear;
+    else if(event.key === "Backspace")
+        targetElement = erase;
+    else if(event.key === "=" || event.key === "Enter")
+        targetElement = equals;
+    else if(event.key === "+" || event.key === "-" || event.key === "/") {
+        operators.forEach((op) => {
+            if(op.textContent === event.key) 
+                targetElement = op;
+        })
+    }
+    else if((event.key >= "0" && event.key <= "9") || event.key === ".") {
+        digits.forEach(digit => {
+            if(digit.textContent === event.key) 
+                targetElement = digit;
+        })
+    }
+
+    if(targetElement)
+        targetElement.click();
 })
