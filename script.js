@@ -135,7 +135,7 @@ equals.addEventListener("click", () =>  {
     const result = operate(firstNum, secondNum, operator);
 
     if(result === "ERROR") {
-        display.textContent = "ERROR! You can't divide by 0";
+        display.textContent = "ERROR";
         clearState();
         return;
     }
